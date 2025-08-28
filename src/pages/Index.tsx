@@ -75,6 +75,22 @@ const Index = () => {
     setActiveTask(task);
   };
 
+  const startNextTask = () => {
+    const pendingTasks = tasks.filter(task => !task.completed);
+    if (pendingTasks.length > 0) {
+      setActiveTask(pendingTasks[0]);
+    } else {
+      setActiveTask(null);
+    }
+  };
+
+  const startFocusSession = () => {
+    const pendingTasks = getTodaysTasks().filter(task => !task.completed);
+    if (pendingTasks.length > 0) {
+      setActiveTask(pendingTasks[0]);
+    }
+  };
+
   const getTodaysTasks = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -116,6 +132,27 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Tasks & Timer */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Quick Start Section */}
+            {!activeTask && getTodaysTasks().filter(task => !task.completed).length > 0 && (
+              <Card className="p-6 text-center bg-gradient-to-r from-primary/10 to-background border-primary/30">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-foreground">Ready to Focus?</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Start your focus session with the next pending task
+                    </p>
+                  </div>
+                  <Button
+                    onClick={startFocusSession}
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant px-8"
+                  >
+                    🎯 Start Focus Session
+                  </Button>
+                </div>
+              </Card>
+            )}
+
             {/* Active Pomodoro Timer */}
             {activeTask && (
               <Card className="p-6 bg-gradient-to-r from-timer-bg to-background border-timer-active/30">
@@ -123,6 +160,8 @@ const Index = () => {
                   task={activeTask}
                   onComplete={() => completeTask(activeTask.id)}
                   onStop={() => setActiveTask(null)}
+                  onStartNext={startNextTask}
+                  availableTasks={tasks.filter(task => !task.completed)}
                 />
               </Card>
             )}

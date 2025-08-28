@@ -10,15 +10,20 @@ interface PomodoroTimerProps {
   task: Task;
   onComplete: () => void;
   onStop: () => void;
+  onStartNext?: () => void;
+  availableTasks?: Task[];
 }
 
-export const PomodoroTimer = ({ task, onComplete, onStop }: PomodoroTimerProps) => {
+export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, availableTasks }: PomodoroTimerProps) => {
   const [timeLeft, setTimeLeft] = useState(task.estimatedTime * 60); // Convert to seconds
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isBreakTime, setIsBreakTime] = useState(false);
+  const [breakTime, setBreakTime] = useState(5 * 60); // 5 minute default break
   const { toast } = useToast();
 
-  const totalTime = task.estimatedTime * 60;
+  const totalTime = isBreakTime ? breakTime : task.estimatedTime * 60;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
   useEffect(() => {
@@ -29,12 +34,28 @@ export const PomodoroTimer = ({ task, onComplete, onStop }: PomodoroTimerProps) 
         setTimeLeft(time => {
           if (time <= 1) {
             setIsRunning(false);
-            toast({
-              title: "🎉 Task Completed!",
-              description: `Great job completing "${task.title}"!`,
-              className: "bg-success text-success-foreground",
-            });
-            setTimeout(onComplete, 1000);
+            if (isBreakTime) {
+              toast({
+                title: "✨ Break Complete!",
+                description: "Ready to get back to work?",
+                className: "bg-success text-success-foreground",
+              });
+              setIsBreakTime(false);
+              setIsCompleted(false);
+              if (onStartNext && availableTasks && availableTasks.length > 0) {
+                // Auto start next task after break
+                setTimeout(() => onStartNext(), 1000);
+              } else {
+                setTimeout(() => onStop(), 1000);
+              }
+            } else {
+              toast({
+                title: "🎉 Task Completed!",
+                description: `Great job completing "${task.title}"!`,
+                className: "bg-success text-success-foreground",
+              });
+              setIsCompleted(true);
+            }
             return 0;
           }
           return time - 1;
@@ -45,7 +66,27 @@ export const PomodoroTimer = ({ task, onComplete, onStop }: PomodoroTimerProps) 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRunning, timeLeft, task.title, onComplete, toast]);
+  }, [isRunning, timeLeft, task.title, onComplete, onStartNext, availableTasks, isBreakTime, toast]);
+
+  const handleTakeBreak = () => {
+    setIsBreakTime(true);
+    setTimeLeft(breakTime);
+    setIsCompleted(false);
+    setIsRunning(true);
+    onComplete(); // Mark the task as complete
+  };
+
+  const handleStartNextTask = () => {
+    onComplete(); // Mark current task as complete
+    if (onStartNext) {
+      onStartNext();
+    }
+  };
+
+  const handleFinishSession = () => {
+    onComplete();
+    onStop();
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -79,10 +120,10 @@ export const PomodoroTimer = ({ task, onComplete, onStop }: PomodoroTimerProps) 
     <div className="text-center space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-foreground">
-          {task.title}
+          {isBreakTime ? '☕ Break Time' : task.title}
         </h2>
         <p className="text-muted-foreground">
-          Focus Session • {task.estimatedTime} minutes
+          {isBreakTime ? `Break Session • ${breakTime / 60} minutes` : `Focus Session • ${task.estimatedTime} minutes`}
         </p>
       </div>
 
@@ -167,12 +208,64 @@ export const PomodoroTimer = ({ task, onComplete, onStop }: PomodoroTimerProps) 
         )}
       </div>
 
+      {/* Completion Options */}
+      {isCompleted && !isBreakTime && (
+        <div className="text-center p-6 bg-success/10 rounded-lg border border-success/30">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-success font-medium text-lg">🎉 Task Complete!</p>
+              <p className="text-sm text-muted-foreground">
+                What would you like to do next?
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                onClick={handleTakeBreak}
+                size="lg"
+                variant="outline"
+                className="bg-warning/10 border-warning text-warning-foreground hover:bg-warning/20"
+              >
+                ☕ Take a Break (5 min)
+              </Button>
+              
+              {onStartNext && availableTasks && availableTasks.length > 0 && (
+                <Button
+                  onClick={handleStartNextTask}
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  ▶️ Next Task
+                </Button>
+              )}
+              
+              <Button
+                onClick={handleFinishSession}
+                size="lg"
+                variant="outline"
+                className="hover:bg-muted"
+              >
+                ✅ Finish Session
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status Messages */}
-      {isRunning && (
-        <div className="text-center p-4 bg-timer-bg rounded-lg border border-timer-active/30">
-          <p className="text-timer-active font-medium">🔥 Focus Mode Active</p>
+      {isRunning && !isCompleted && (
+        <div className={`text-center p-4 rounded-lg border ${
+          isBreakTime 
+            ? 'bg-warning/10 border-warning/30' 
+            : 'bg-timer-bg border-timer-active/30'
+        }`}>
+          <p className={`font-medium ${
+            isBreakTime ? 'text-warning' : 'text-timer-active'
+          }`}>
+            {isBreakTime ? '☕ Break Time Active' : '🔥 Focus Mode Active'}
+          </p>
           <p className="text-sm text-muted-foreground mt-1">
-            Stay focused and complete this task!
+            {isBreakTime ? 'Relax and recharge!' : 'Stay focused and complete this task!'}
           </p>
         </div>
       )}
