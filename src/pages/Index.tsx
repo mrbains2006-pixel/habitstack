@@ -4,10 +4,11 @@ import { TaskList } from '@/components/TaskList';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
 import { Analytics } from '@/components/Analytics';
 import { DailyReflection } from '@/components/DailyReflection';
+import { IntroSlides } from '@/components/IntroSlides';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, BarChart3, MessageSquare, Plus } from 'lucide-react';
+import { Brain, BarChart3, MessageSquare, Plus, HelpCircle } from 'lucide-react';
 
 export interface Task {
   id: string;
@@ -23,6 +24,15 @@ const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showTaskCreator, setShowTaskCreator] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+
+  // Check if user has seen intro on mount
+  useEffect(() => {
+    const hasSeenIntro = localStorage.getItem('habitstack-intro-seen');
+    if (!hasSeenIntro) {
+      setShowIntro(true);
+    }
+  }, []);
 
   // Load tasks from localStorage on mount
   useEffect(() => {
@@ -117,13 +127,24 @@ const Index = () => {
               <Brain className="h-8 w-8 text-primary" />
               <h1 className="text-2xl font-bold text-foreground">HabitStack</h1>
             </div>
-            <Button 
-              onClick={() => setShowTaskCreator(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Task
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowIntro(true)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Help
+              </Button>
+              <Button 
+                onClick={() => setShowTaskCreator(true)}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Task
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -223,6 +244,12 @@ const Index = () => {
           onCancel={() => setShowTaskCreator(false)}
         />
       )}
+
+      {/* Intro Slides */}
+      <IntroSlides 
+        isOpen={showIntro}
+        onClose={() => setShowIntro(false)}
+      />
     </div>
   );
 };
