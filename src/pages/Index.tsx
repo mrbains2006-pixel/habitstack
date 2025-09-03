@@ -6,6 +6,7 @@ import { StandalonePomodoroTimer } from '@/components/StandalonePomodoroTimer';
 import { Analytics } from '@/components/Analytics';
 import { DailyReflection } from '@/components/DailyReflection';
 import { IntroSlides } from '@/components/IntroSlides';
+import { Settings } from '@/components/Settings';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,6 +30,9 @@ const Index = () => {
   const [showStandaloneTimer, setShowStandaloneTimer] = useState(false);
   const [isTaskTimerRunning, setIsTaskTimerRunning] = useState(false);
   const [isStandaloneTimerRunning, setIsStandaloneTimerRunning] = useState(false);
+  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(
+    localStorage.getItem('habitstack-background')
+  );
 
   // Check if user has seen intro on mount
   useEffect(() => {
@@ -127,9 +131,24 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm">
+    <div 
+      className="min-h-screen bg-background relative"
+      style={{
+        backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Background Overlay */}
+      {backgroundUrl && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-0" />
+      )}
+      
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -137,6 +156,7 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-foreground">HabitStack</h1>
             </div>
             <div className="flex items-center space-x-3">
+              <Settings onBackgroundChange={setBackgroundUrl} />
               <Button
                 variant="ghost"
                 size="sm"
@@ -275,6 +295,7 @@ const Index = () => {
           </div>
         </div>
       </main>
+      </div>
 
       {/* Task Creator Modal */}
       {showTaskCreator && (
@@ -288,6 +309,7 @@ const Index = () => {
       <IntroSlides 
         isOpen={showIntro}
         onClose={() => setShowIntro(false)}
+        onBackgroundChange={setBackgroundUrl}
       />
     </div>
   );

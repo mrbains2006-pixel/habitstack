@@ -1,53 +1,130 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, X, Brain, Timer, BarChart3, MessageSquare, CheckCircle } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { 
+  Brain, 
+  Target, 
+  Timer, 
+  BarChart3, 
+  ArrowRight, 
+  CheckCircle,
+  Palette,
+  ChevronLeft,
+  ChevronRight,
+  X
+} from 'lucide-react';
+import { BackgroundSettings } from '@/components/BackgroundSettings';
 
 interface IntroSlidesProps {
   isOpen: boolean;
   onClose: () => void;
+  onBackgroundChange?: (backgroundUrl: string | null) => void;
 }
 
 const slides = [
   {
     icon: Brain,
-    title: "Welcome to HabitStack!",
-    description: "Your personal productivity companion that helps you stack habits and achieve your goals with focused work sessions.",
-    content: "HabitStack combines the power of habit stacking with the Pomodoro Technique to boost your productivity and track your progress.",
-    tip: "Ready to transform your productivity? Let's get started!"
+    title: "Welcome to HabitStack! 🎯",
+    description: "Your personal productivity companion designed to help you build better habits and achieve your goals through focused work sessions.",
+    content: (
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center">
+          <Brain className="h-10 w-10 text-white" />
+        </div>
+        <p className="text-muted-foreground">
+          Transform your daily tasks into a structured, gamified experience that motivates you to stay productive and focused.
+        </p>
+      </div>
+    )
+  },
+  {
+    icon: Palette,
+    title: "Personalize Your Workspace 🎨",
+    description: "Upload your favorite background image to create an inspiring and personalized work environment.",
+    content: (onBackgroundChange: (url: string | null) => void) => (
+      <div className="space-y-6">
+        <div className="text-center">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-4">
+            <Palette className="h-10 w-10 text-white" />
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Make HabitStack truly yours by setting a custom background template that inspires and motivates you.
+          </p>
+        </div>
+        <BackgroundSettings onBackgroundChange={onBackgroundChange} />
+      </div>
+    )
   },
   {
     icon: CheckCircle,
     title: "Create Your Tasks",
     description: "Start by adding tasks you want to complete. Set realistic time estimates for each task.",
-    content: "Click the 'Add Task' button to create new tasks. You can categorize them and set custom time estimates based on your needs.",
-    tip: "Pro tip: Break larger tasks into smaller, manageable chunks of 25-90 minutes."
+    content: (
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+          <CheckCircle className="h-10 w-10 text-white" />
+        </div>
+        <p className="text-muted-foreground">
+          Click the 'Add Task' button to create new tasks. You can categorize them and set custom time estimates based on your needs.
+        </p>
+        <div className="bg-muted/30 rounded-lg p-4">
+          <p className="text-sm text-muted-foreground">
+            💡 Pro tip: Break larger tasks into smaller, manageable chunks of 25-90 minutes.
+          </p>
+        </div>
+      </div>
+    )
   },
   {
     icon: Timer,
     title: "Focus with Pomodoro Timer",
     description: "Use the built-in Pomodoro timer to maintain focus and complete your tasks efficiently.",
-    content: "Click 'Start Focus Session' to begin working on your next pending task. The timer will track your progress and automatically mark tasks as complete.",
-    tip: "Stay focused during the timer - no distractions allowed!"
+    content: (
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
+          <Timer className="h-10 w-10 text-white" />
+        </div>
+        <p className="text-muted-foreground">
+          Click 'Start Focus Session' to begin working on your next pending task. The timer will track your progress and automatically mark tasks as complete.
+        </p>
+        <div className="bg-muted/30 rounded-lg p-4">
+          <p className="text-sm text-muted-foreground">
+            💡 Stay focused during the timer - no distractions allowed!
+          </p>
+        </div>
+      </div>
+    )
   },
   {
     icon: BarChart3,
     title: "Track Your Progress",
     description: "Monitor your daily productivity with real-time analytics and performance metrics.",
-    content: "View your completion rate, total focus time, and productivity trends. The analytics help you understand your work patterns.",
-    tip: "Consistency is key - try to complete at least a few tasks each day."
-  },
-  {
-    icon: MessageSquare,
-    title: "Daily Reflection",
-    description: "End each day with reflection to improve your productivity and celebrate your achievements.",
-    content: "Answer simple questions about your day to track your mood, energy levels, and what you learned. This helps optimize future performance.",
-    tip: "Honest reflection leads to better self-awareness and improved productivity."
+    content: (
+      <div className="text-center space-y-4">
+        <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+          <BarChart3 className="h-10 w-10 text-white" />
+        </div>
+        <p className="text-muted-foreground">
+          View your completion rate, total focus time, and productivity trends. The analytics help you understand your work patterns.
+        </p>
+        <div className="bg-muted/30 rounded-lg p-4">
+          <p className="text-sm text-muted-foreground">
+            💡 Consistency is key - try to complete at least a few tasks each day.
+          </p>
+        </div>
+      </div>
+    )
   }
 ];
 
-export const IntroSlides = ({ isOpen, onClose }: IntroSlidesProps) => {
+export const IntroSlides = ({ isOpen, onClose, onBackgroundChange }: IntroSlidesProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const nextSlide = () => {
@@ -106,23 +183,18 @@ export const IntroSlides = ({ isOpen, onClose }: IntroSlidesProps) => {
         {/* Content */}
         <div className="p-8 space-y-6">
           <div className="text-center space-y-4">
-            <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-elegant">
-              <IconComponent className="h-10 w-10 text-white" />
-            </div>
-            
             <div className="space-y-2">
               <p className="text-lg font-medium text-foreground">
                 {current.description}
               </p>
-              <p className="text-muted-foreground leading-relaxed">
-                {current.content}
-              </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-gradient-to-r from-success/10 to-primary/5 border border-success/20">
-              <p className="text-sm text-success-foreground font-medium">
-                💡 {current.tip}
-              </p>
+            {/* Render content based on type */}
+            <div className="mt-6">
+              {typeof current.content === 'function' 
+                ? current.content(onBackgroundChange!)
+                : current.content
+              }
             </div>
           </div>
 
