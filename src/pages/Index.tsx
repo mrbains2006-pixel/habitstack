@@ -27,6 +27,8 @@ const Index = () => {
   const [showTaskCreator, setShowTaskCreator] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showStandaloneTimer, setShowStandaloneTimer] = useState(false);
+  const [isTaskTimerRunning, setIsTaskTimerRunning] = useState(false);
+  const [isStandaloneTimerRunning, setIsStandaloneTimerRunning] = useState(false);
 
   // Check if user has seen intro on mount
   useEffect(() => {
@@ -84,6 +86,11 @@ const Index = () => {
   };
 
   const startTask = (task: Task) => {
+    // Stop standalone timer if running
+    if (isStandaloneTimerRunning) {
+      setShowStandaloneTimer(false);
+      setIsStandaloneTimerRunning(false);
+    }
     setActiveTask(task);
   };
 
@@ -140,7 +147,14 @@ const Index = () => {
                 Help
               </Button>
               <Button 
-                onClick={() => setShowStandaloneTimer(true)}
+                onClick={() => {
+                  // Stop task timer if running
+                  if (activeTask) {
+                    setActiveTask(null);
+                    setIsTaskTimerRunning(false);
+                  }
+                  setShowStandaloneTimer(true);
+                }}
                 variant="outline"
                 className="border-primary/30 text-primary hover:bg-primary/10"
               >
@@ -190,16 +204,26 @@ const Index = () => {
                 <PomodoroTimer 
                   task={activeTask}
                   onComplete={() => completeTask(activeTask.id)}
-                  onStop={() => setActiveTask(null)}
+                  onStop={() => {
+                    setActiveTask(null);
+                    setIsTaskTimerRunning(false);
+                  }}
                   onStartNext={startNextTask}
                   availableTasks={tasks.filter(task => !task.completed)}
+                  onTimerStateChange={setIsTaskTimerRunning}
                 />
               </Card>
             )}
 
             {/* Standalone Pomodoro Timer */}
             {showStandaloneTimer && (
-              <StandalonePomodoroTimer onClose={() => setShowStandaloneTimer(false)} />
+              <StandalonePomodoroTimer 
+                onClose={() => {
+                  setShowStandaloneTimer(false);
+                  setIsStandaloneTimerRunning(false);
+                }} 
+                onTimerStateChange={setIsStandaloneTimerRunning}
+              />
             )}
 
             {/* Task Management */}

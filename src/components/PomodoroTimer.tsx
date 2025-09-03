@@ -12,9 +12,10 @@ interface PomodoroTimerProps {
   onStop: () => void;
   onStartNext?: () => void;
   availableTasks?: Task[];
+  onTimerStateChange?: (isRunning: boolean) => void;
 }
 
-export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, availableTasks }: PomodoroTimerProps) => {
+export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, availableTasks, onTimerStateChange }: PomodoroTimerProps) => {
   const [timeLeft, setTimeLeft] = useState(task.estimatedTime * 60); // Convert to seconds
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -97,11 +98,13 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
   const handleStart = () => {
     setIsRunning(true);
     setIsPaused(false);
+    onTimerStateChange?.(true);
   };
 
   const handlePause = () => {
     setIsRunning(false);
     setIsPaused(true);
+    onTimerStateChange?.(false);
   };
 
   const handleReset = () => {
@@ -113,6 +116,7 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
   const handleStop = () => {
     setIsRunning(false);
     setIsPaused(false);
+    onTimerStateChange?.(false);
     onStop();
   };
 

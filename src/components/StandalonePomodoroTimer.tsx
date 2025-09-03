@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 
 interface StandalonePomodoroTimerProps {
   onClose: () => void;
+  onTimerStateChange?: (isRunning: boolean) => void;
 }
 
-export const StandalonePomodoroTimer = ({ onClose }: StandalonePomodoroTimerProps) => {
+export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange }: StandalonePomodoroTimerProps) => {
   const [workTime, setWorkTime] = useState(25); // minutes
   const [breakTime, setBreakTime] = useState(5); // minutes
   const [timeLeft, setTimeLeft] = useState(workTime * 60); // seconds
@@ -63,11 +64,13 @@ export const StandalonePomodoroTimer = ({ onClose }: StandalonePomodoroTimerProp
   const handleStart = () => {
     setIsRunning(true);
     setIsPaused(false);
+    onTimerStateChange?.(true);
   };
 
   const handlePause = () => {
     setIsRunning(false);
     setIsPaused(true);
+    onTimerStateChange?.(false);
   };
 
   const handleReset = () => {
@@ -81,6 +84,7 @@ export const StandalonePomodoroTimer = ({ onClose }: StandalonePomodoroTimerProp
     setIsPaused(false);
     setIsBreakTime(false);
     setTimeLeft(workTime * 60);
+    onTimerStateChange?.(false);
     onClose();
   };
 
@@ -177,7 +181,7 @@ export const StandalonePomodoroTimer = ({ onClose }: StandalonePomodoroTimerProp
               <Button 
                 onClick={handleStart}
                 size="lg"
-                className="bg-timer-start hover:bg-timer-start/90 text-white shadow-elegant px-8"
+                className="bg-secondary/80 hover:bg-secondary text-secondary-foreground shadow-elegant px-8"
               >
                 <Play className="h-5 w-5 mr-2" />
                 {isPaused ? 'Resume' : 'Start'}
@@ -186,8 +190,7 @@ export const StandalonePomodoroTimer = ({ onClose }: StandalonePomodoroTimerProp
               <Button 
                 onClick={handlePause}
                 size="lg"
-                variant="outline"
-                className="border-timer-pause text-timer-pause hover:bg-timer-pause/10 px-8"
+                className="bg-destructive/80 hover:bg-destructive text-destructive-foreground px-8"
               >
                 <Pause className="h-5 w-5 mr-2" />
                 Pause
