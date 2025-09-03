@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { TaskCreator } from '@/components/TaskCreator';
 import { TaskList } from '@/components/TaskList';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
+import { StandalonePomodoroTimer } from '@/components/StandalonePomodoroTimer';
 import { Analytics } from '@/components/Analytics';
 import { DailyReflection } from '@/components/DailyReflection';
 import { IntroSlides } from '@/components/IntroSlides';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, BarChart3, MessageSquare, Plus, HelpCircle } from 'lucide-react';
+import { Brain, BarChart3, MessageSquare, Plus, HelpCircle, Timer } from 'lucide-react';
 
 export interface Task {
   id: string;
@@ -25,6 +26,7 @@ const Index = () => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showTaskCreator, setShowTaskCreator] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [showStandaloneTimer, setShowStandaloneTimer] = useState(false);
 
   // Check if user has seen intro on mount
   useEffect(() => {
@@ -138,6 +140,14 @@ const Index = () => {
                 Help
               </Button>
               <Button 
+                onClick={() => setShowStandaloneTimer(true)}
+                variant="outline"
+                className="border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Timer className="h-4 w-4 mr-2" />
+                Pomodoro
+              </Button>
+              <Button 
                 onClick={() => setShowTaskCreator(true)}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant"
               >
@@ -185,6 +195,11 @@ const Index = () => {
                   availableTasks={tasks.filter(task => !task.completed)}
                 />
               </Card>
+            )}
+
+            {/* Standalone Pomodoro Timer */}
+            {showStandaloneTimer && (
+              <StandalonePomodoroTimer onClose={() => setShowStandaloneTimer(false)} />
             )}
 
             {/* Task Management */}
