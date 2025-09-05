@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, Square, RotateCcw, Settings } from 'lucide-react';
+import { Play, Pause, Square, RotateCcw, Settings, Maximize, Minimize } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,7 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
   const [isPaused, setIsPaused] = useState(false);
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -86,8 +87,13 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
     setIsPaused(false);
     setIsBreakTime(false);
     setTimeLeft(workTime * 60);
+    setIsFullscreen(false);
     onTimerStateChange?.(false);
     onClose();
+  };
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
   };
 
   const updateSettings = () => {
@@ -146,8 +152,8 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
     );
   }
 
-  return (
-    <Card className={`p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'}`}>
+  const timerContent = (
+    <Card className={`p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'} ${isFullscreen ? 'bg-transparent border-none' : ''}`}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -159,6 +165,11 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
             </p>
           </div>
           <div className="flex space-x-2">
+            {(isRunning || isPaused) && (
+              <Button variant="ghost" size="sm" onClick={toggleFullscreen}>
+                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => setShowSettings(true)}>
               <Settings className="h-4 w-4" />
             </Button>
@@ -223,4 +234,27 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
       </div>
     </Card>
   );
+
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="w-full max-w-4xl mx-auto px-8">
+          <div className="absolute top-6 right-6">
+            <Button
+              onClick={toggleFullscreen}
+              size="lg"
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <Minimize className="h-5 w-5 mr-2" />
+              Exit Fullscreen
+            </Button>
+          </div>
+          {timerContent}
+        </div>
+      </div>
+    );
+  }
+
+  return timerContent;
 };

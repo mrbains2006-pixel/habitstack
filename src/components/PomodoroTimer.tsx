@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, Square, RotateCcw } from 'lucide-react';
+import { Play, Pause, Square, RotateCcw, Maximize, Minimize } from 'lucide-react';
 import { Task } from '@/pages/Index';
 import { useToast } from '@/hooks/use-toast';
 import type { PomodoroTheme } from '@/components/PomodoroThemeSelector';
@@ -24,6 +24,7 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
   const [isCompleted, setIsCompleted] = useState(false);
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [breakTime, setBreakTime] = useState(5 * 60); // 5 minute default break
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
 
   const totalTime = isBreakTime ? breakTime : task.estimatedTime * 60;
@@ -118,12 +119,17 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
   const handleStop = () => {
     setIsRunning(false);
     setIsPaused(false);
+    setIsFullscreen(false);
     onTimerStateChange?.(false);
     onStop();
   };
 
-  return (
-    <div className="text-center space-y-6">
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const timerContent = (
+    <div className={`text-center space-y-6 ${isFullscreen ? 'h-full flex flex-col justify-center' : ''}`}>
       <div className="space-y-2">
         <h2 className={`text-2xl font-bold ${theme?.colors.text || 'text-foreground'}`}>
           {isBreakTime ? '☕ Break Time' : task.title}
@@ -155,6 +161,26 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
 
       {/* Controls */}
       <div className="flex justify-center space-x-3">
+        {(isRunning || isPaused) && (
+          <Button
+            onClick={toggleFullscreen}
+            size="lg"
+            variant="outline"
+            className="px-6"
+          >
+            {isFullscreen ? (
+              <>
+                <Minimize className="h-5 w-5 mr-2" />
+                Minimize
+              </>
+            ) : (
+              <>
+                <Maximize className="h-5 w-5 mr-2" />
+                Fullscreen
+              </>
+            )}
+          </Button>
+        )}
         {!isRunning && !isPaused && (
           <Button
             onClick={handleStart}
@@ -277,4 +303,27 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
       )}
     </div>
   );
+
+  if (isFullscreen) {
+    return (
+      <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="w-full max-w-4xl mx-auto px-8">
+          <div className="absolute top-6 right-6">
+            <Button
+              onClick={toggleFullscreen}
+              size="lg"
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <Minimize className="h-5 w-5 mr-2" />
+              Exit Fullscreen
+            </Button>
+          </div>
+          {timerContent}
+        </div>
+      </div>
+    );
+  }
+
+  return timerContent;
 };
