@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Play, Pause, Square, RotateCcw } from 'lucide-react';
 import { Task } from '@/pages/Index';
 import { useToast } from '@/hooks/use-toast';
+import type { PomodoroTheme } from '@/components/PomodoroThemeSelector';
 
 interface PomodoroTimerProps {
   task: Task;
@@ -13,9 +14,10 @@ interface PomodoroTimerProps {
   onStartNext?: () => void;
   availableTasks?: Task[];
   onTimerStateChange?: (isRunning: boolean) => void;
+  theme?: PomodoroTheme;
 }
 
-export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, availableTasks, onTimerStateChange }: PomodoroTimerProps) => {
+export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, availableTasks, onTimerStateChange, theme }: PomodoroTimerProps) => {
   const [timeLeft, setTimeLeft] = useState(task.estimatedTime * 60); // Convert to seconds
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -123,10 +125,10 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
   return (
     <div className="text-center space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-foreground">
+        <h2 className={`text-2xl font-bold ${theme?.colors.text || 'text-foreground'}`}>
           {isBreakTime ? '☕ Break Time' : task.title}
         </h2>
-        <p className="text-muted-foreground">
+        <p className={`${theme?.colors.text || 'text-muted-foreground'}`}>
           {isBreakTime ? `Break Session • ${breakTime / 60} minutes` : `Focus Session • ${task.estimatedTime} minutes`}
         </p>
       </div>
@@ -134,7 +136,7 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
       {/* Timer Display */}
       <div className="relative">
         <div className={`text-6xl font-mono font-bold transition-colors duration-300 ${
-          isRunning ? 'text-timer-active' : 'text-foreground'
+          theme?.colors.text || (isRunning ? 'text-timer-active' : 'text-foreground')
         }`}>
           {formatTime(timeLeft)}
         </div>

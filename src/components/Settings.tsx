@@ -7,12 +7,15 @@ import { Settings as SettingsIcon, Palette, Timer, Bell } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { PomodoroThemeSelector, type PomodoroTheme } from '@/components/PomodoroThemeSelector';
 
 interface SettingsProps {
   onBackgroundChange?: (backgroundUrl: string | null) => void;
+  pomodoroTheme: PomodoroTheme;
+  onPomodoroThemeChange: (theme: PomodoroTheme) => void;
 }
 
-export const Settings = ({ onBackgroundChange }: SettingsProps) => {
+export const Settings = ({ onBackgroundChange, pomodoroTheme, onPomodoroThemeChange }: SettingsProps) => {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(
     localStorage.getItem('habitstack-notifications') !== 'false'
@@ -65,28 +68,10 @@ export const Settings = ({ onBackgroundChange }: SettingsProps) => {
           </TabsContent>
 
           <TabsContent value="pomodoro" className="mt-6">
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">Pomodoro Settings</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Default timer settings (can be adjusted in individual timers)
-                  </p>
-                </div>
-                
-                <div className="text-sm text-muted-foreground">
-                  <p>• Focus sessions: 25 minutes</p>
-                  <p>• Short breaks: 5 minutes</p>
-                  <p>• Long breaks: 15 minutes</p>
-                </div>
-                
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">
-                    💡 You can customize timer durations when using the standalone Pomodoro timer.
-                  </p>
-                </div>
-              </div>
-            </Card>
+            <PomodoroThemeSelector 
+              selectedTheme={pomodoroTheme.id}
+              onThemeChange={onPomodoroThemeChange}
+            />
           </TabsContent>
 
           <TabsContent value="notifications" className="mt-6">

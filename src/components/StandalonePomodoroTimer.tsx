@@ -6,13 +6,15 @@ import { Play, Pause, Square, RotateCcw, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { PomodoroTheme } from '@/components/PomodoroThemeSelector';
 
 interface StandalonePomodoroTimerProps {
   onClose: () => void;
   onTimerStateChange?: (isRunning: boolean) => void;
+  theme?: PomodoroTheme;
 }
 
-export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange }: StandalonePomodoroTimerProps) => {
+export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: StandalonePomodoroTimerProps) => {
   const [workTime, setWorkTime] = useState(25); // minutes
   const [breakTime, setBreakTime] = useState(5); // minutes
   const [timeLeft, setTimeLeft] = useState(workTime * 60); // seconds
@@ -100,10 +102,10 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange }: Standal
 
   if (showSettings) {
     return (
-      <Card className="p-6 bg-gradient-to-r from-timer-bg to-background border-timer-active/30">
+      <Card className={`p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'}`}>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground">Pomodoro Settings</h3>
+            <h3 className={`text-lg font-semibold ${theme?.colors.text || 'text-foreground'}`}>Pomodoro Settings</h3>
             <Button variant="ghost" size="sm" onClick={() => setShowSettings(false)}>
               Back
             </Button>
@@ -145,14 +147,14 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange }: Standal
   }
 
   return (
-    <Card className="p-6 bg-gradient-to-r from-timer-bg to-background border-timer-active/30">
+    <Card className={`p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'}`}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className={`text-lg font-semibold ${theme?.colors.text || 'text-foreground'}`}>
               {isBreakTime ? "🌱 Break Time" : "🎯 Focus Session"}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className={`text-sm ${theme?.colors.text || 'text-muted-foreground'}`}>
               {isBreakTime ? "Take a moment to recharge" : "Deep work time"}
             </p>
           </div>
@@ -167,7 +169,7 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange }: Standal
         </div>
 
         <div className="text-center space-y-4">
-          <div className="text-6xl font-mono font-bold text-foreground">
+          <div className={`text-6xl font-mono font-bold ${theme?.colors.text || 'text-foreground'}`}>
             {formatTime(timeLeft)}
           </div>
           

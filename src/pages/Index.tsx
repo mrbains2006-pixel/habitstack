@@ -7,10 +7,12 @@ import { Analytics } from '@/components/Analytics';
 import { DailyReflection } from '@/components/DailyReflection';
 import { IntroSlides } from '@/components/IntroSlides';
 import { Settings } from '@/components/Settings';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain, BarChart3, MessageSquare, Plus, HelpCircle, Timer } from 'lucide-react';
+import type { PomodoroTheme } from '@/components/PomodoroThemeSelector';
 
 export interface Task {
   id: string;
@@ -33,6 +35,24 @@ const Index = () => {
   const [backgroundUrl, setBackgroundUrl] = useState<string | null>(
     localStorage.getItem('habitstack-background')
   );
+  const [pomodoroTheme, setPomodoroTheme] = useState<PomodoroTheme>(() => {
+    const saved = localStorage.getItem('habitstack-pomodoro-theme');
+    return saved ? JSON.parse(saved) : {
+      id: 'default',
+      name: 'Ocean',
+      colors: {
+        background: 'from-blue-500/20 to-cyan-500/20',
+        text: 'text-blue-900 dark:text-blue-100',
+        accent: 'border-blue-500/30',
+        gradient: 'from-blue-500 to-cyan-500'
+      },
+      preview: {
+        background: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
+        timer: 'text-blue-900',
+        button: 'bg-blue-500'
+      }
+    };
+  });
 
   // Check if user has seen intro on mount
   useEffect(() => {
@@ -156,7 +176,15 @@ const Index = () => {
               <h1 className="text-2xl font-bold text-foreground">HabitStack</h1>
             </div>
             <div className="flex items-center space-x-3">
-              <Settings onBackgroundChange={setBackgroundUrl} />
+              <Settings 
+                onBackgroundChange={setBackgroundUrl} 
+                pomodoroTheme={pomodoroTheme}
+                onPomodoroThemeChange={(theme) => {
+                  setPomodoroTheme(theme);
+                  localStorage.setItem('habitstack-pomodoro-theme', JSON.stringify(theme));
+                }}
+              />
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="sm"
@@ -220,7 +248,7 @@ const Index = () => {
 
             {/* Active Pomodoro Timer */}
             {activeTask && (
-              <Card className="p-6 bg-gradient-to-r from-timer-bg to-background border-timer-active/30">
+              <Card className={`p-6 bg-gradient-to-r ${pomodoroTheme.colors.background} ${pomodoroTheme.colors.accent}`}>
                 <PomodoroTimer 
                   task={activeTask}
                   onComplete={() => completeTask(activeTask.id)}
@@ -231,6 +259,7 @@ const Index = () => {
                   onStartNext={startNextTask}
                   availableTasks={tasks.filter(task => !task.completed)}
                   onTimerStateChange={setIsTaskTimerRunning}
+                  theme={pomodoroTheme}
                 />
               </Card>
             )}
@@ -243,6 +272,7 @@ const Index = () => {
                   setIsStandaloneTimerRunning(false);
                 }} 
                 onTimerStateChange={setIsStandaloneTimerRunning}
+                theme={pomodoroTheme}
               />
             )}
 
@@ -310,6 +340,11 @@ const Index = () => {
         isOpen={showIntro}
         onClose={() => setShowIntro(false)}
         onBackgroundChange={setBackgroundUrl}
+        pomodoroTheme={pomodoroTheme}
+        onPomodoroThemeChange={(theme) => {
+          setPomodoroTheme(theme);
+          localStorage.setItem('habitstack-pomodoro-theme', JSON.stringify(theme));
+        }}
       />
     </div>
   );
