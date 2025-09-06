@@ -14,7 +14,146 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      habit: {
+        Row: {
+          created_at: string | null
+          habit_name: string | null
+          id: string
+          pomodoro_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          habit_name?: string | null
+          id?: string
+          pomodoro_count?: number | null
+          user_id?: string
+        }
+        Update: {
+          created_at?: string | null
+          habit_name?: string | null
+          id?: string
+          pomodoro_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pomodoro_sessions: {
+        Row: {
+          actual_duration: number | null
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          planned_duration: number
+          session_type: string
+          started_at: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_duration?: number | null
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          planned_duration: number
+          session_type?: string
+          started_at?: string
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_duration?: number | null
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          planned_duration?: number
+          session_type?: string
+          started_at?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pomodoro_sessions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          actual_time: number | null
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          estimated_time: number
+          id: string
+          priority: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_time?: number | null
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_time?: number
+          id?: string
+          priority?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_time?: number | null
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_time?: number
+          id?: string
+          priority?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

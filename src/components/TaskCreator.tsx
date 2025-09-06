@@ -3,18 +3,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Clock, Tag } from 'lucide-react';
+import { X, Clock, Tag, AlertCircle } from 'lucide-react';
 import { Task } from '@/pages/Index';
 
 interface TaskCreatorProps {
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt' | 'actualTime'>) => void;
   onCancel: () => void;
 }
 
 export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [estimatedTime, setEstimatedTime] = useState(25);
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [category, setCategory] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,11 +25,15 @@ export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
     if (title.trim()) {
       onAddTask({
         title: title.trim(),
+        description: description.trim() || undefined,
         estimatedTime,
+        priority,
         category: category || undefined,
       });
       setTitle('');
+      setDescription('');
       setEstimatedTime(25);
+      setPriority('medium');
       setCategory('');
     }
   };
@@ -60,6 +67,35 @@ export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
               className="bg-background border-border focus:ring-focus"
               autoFocus
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (optional)</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add any additional details..."
+              className="bg-background border-border focus:ring-focus resize-none"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="priority" className="flex items-center space-x-2">
+              <AlertCircle className="h-4 w-4" />
+              <span>Priority</span>
+            </Label>
+            <Select value={priority} onValueChange={(value: any) => setPriority(value)}>
+              <SelectTrigger className="bg-background border-border focus:ring-focus">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
