@@ -157,10 +157,10 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className={`text-lg font-semibold ${theme?.colors.text || 'text-foreground'}`}>
+            <h3 className={`${isFullscreen ? 'text-3xl' : 'text-lg'} font-semibold ${theme?.colors.text || 'text-foreground'}`}>
               {isBreakTime ? "🌱 Break Time" : "🎯 Focus Session"}
             </h3>
-            <p className={`text-sm ${theme?.colors.text || 'text-muted-foreground'}`}>
+            <p className={`${isFullscreen ? 'text-lg' : 'text-sm'} ${theme?.colors.text || 'text-muted-foreground'}`}>
               {isBreakTime ? "Take a moment to recharge" : "Deep work time"}
             </p>
           </div>
@@ -180,7 +180,7 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
         </div>
 
         <div className="text-center space-y-4">
-          <div className={`text-6xl font-mono font-bold ${theme?.colors.text || 'text-foreground'}`}>
+          <div className={`${isFullscreen ? 'text-9xl' : 'text-6xl'} font-mono font-bold ${theme?.colors.text || 'text-foreground'}`}>
             {formatTime(timeLeft)}
           </div>
           

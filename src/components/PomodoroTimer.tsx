@@ -131,17 +131,17 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
   const timerContent = (
     <div className={`text-center space-y-6 ${isFullscreen ? 'h-full flex flex-col justify-center' : ''}`}>
       <div className="space-y-2">
-        <h2 className={`text-2xl font-bold ${theme?.colors.text || 'text-foreground'}`}>
+        <h2 className={`${isFullscreen ? 'text-4xl' : 'text-2xl'} font-bold ${theme?.colors.text || 'text-foreground'}`}>
           {isBreakTime ? '☕ Break Time' : task.title}
         </h2>
-        <p className={`${theme?.colors.text || 'text-muted-foreground'}`}>
+        <p className={`${isFullscreen ? 'text-xl' : 'text-base'} ${theme?.colors.text || 'text-muted-foreground'}`}>
           {isBreakTime ? `Break Session • ${breakTime / 60} minutes` : `Focus Session • ${task.estimatedTime} minutes`}
         </p>
       </div>
 
       {/* Timer Display */}
-      <div className="relative">
-        <div className={`text-6xl font-mono font-bold transition-colors duration-300 ${
+        <div className="relative">
+        <div className={`${isFullscreen ? 'text-9xl' : 'text-6xl'} font-mono font-bold transition-colors duration-300 ${
           theme?.colors.text || (isRunning ? 'text-timer-active' : 'text-foreground')
         }`}>
           {formatTime(timeLeft)}
