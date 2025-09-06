@@ -306,8 +306,8 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
 
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div className="w-full max-w-4xl mx-auto px-8">
+      <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center pt-16">
+        <div className="w-full max-w-4xl mx-auto px-8 -mt-20">
           <div className="absolute top-6 right-6">
             <Button
               onClick={toggleFullscreen}
