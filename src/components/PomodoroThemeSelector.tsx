@@ -20,6 +20,10 @@ export interface PomodoroTheme {
     timer: string
     button: string
   }
+  customStyles?: {
+    primaryColor: string
+    secondaryColor: string
+  }
 }
 
 const themes: PomodoroTheme[] = [
@@ -107,15 +111,20 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
       id: 'custom',
       name: 'Custom',
       colors: {
-        background: `from-[${customColors.primary}]/20 to-[${customColors.secondary}]/20`,
+        background: 'custom-bg',
         text: 'text-foreground',
-        accent: `border-[${customColors.primary}]/30`,
-        gradient: `from-[${customColors.primary}] to-[${customColors.secondary}]`
+        accent: 'custom-accent',
+        gradient: 'custom-gradient'
       },
       preview: {
-        background: `bg-gradient-to-br from-[${customColors.primary}]/20 to-[${customColors.secondary}]/20`,
-        timer: 'text-foreground',
-        button: `bg-gradient-to-r from-[${customColors.primary}] to-[${customColors.secondary}]`
+        background: 'custom-bg',
+        timer: 'text-foreground', 
+        button: 'custom-gradient'
+      },
+      // Add custom style properties for inline styles
+      customStyles: {
+        primaryColor: customColors.primary,
+        secondaryColor: customColors.secondary
       }
     }
     onThemeChange(customTheme)
@@ -142,7 +151,12 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
               }`}
               onClick={() => onThemeChange(theme)}
             >
-              <div className={`p-3 rounded-lg ${theme.preview.background} relative`}>
+              <div 
+                className={theme.customStyles ? 'p-3 rounded-lg relative' : `p-3 rounded-lg ${theme.preview.background} relative`}
+                style={theme.customStyles ? {
+                  background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}20, ${theme.customStyles.secondaryColor}20)`
+                } : undefined}
+              >
                 {isSelected && (
                   <div className="absolute top-1 right-1">
                     <Badge className="bg-primary text-primary-foreground text-xs">
@@ -158,7 +172,12 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
                   </div>
                   
                   {/* Mini button preview */}
-                  <div className={`h-4 rounded-full ${theme.preview.button} mx-2`} />
+                  <div 
+                    className={theme.customStyles ? "h-4 rounded-full mx-2" : `h-4 rounded-full ${theme.preview.button} mx-2`}
+                    style={theme.customStyles ? {
+                      background: `linear-gradient(90deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+                    } : undefined}
+                  />
                   
                   {/* Theme name */}
                   <p className="text-xs font-medium text-foreground">{theme.name}</p>

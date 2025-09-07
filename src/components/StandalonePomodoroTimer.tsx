@@ -108,7 +108,17 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
 
   if (showSettings) {
     return (
-      <Card className={`p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'}`}>
+      <Card 
+        className={
+          theme?.customStyles
+            ? "p-6 border-2"
+            : `p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'}`
+        }
+        style={theme?.customStyles ? {
+          background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}15, ${theme.customStyles.secondaryColor}15)`,
+          borderColor: `${theme.customStyles.primaryColor}40`
+        } : undefined}
+      >
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className={`text-lg font-semibold ${theme?.colors.text || 'text-foreground'}`}>Pomodoro Settings</h3>
@@ -153,7 +163,17 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
   }
 
   const timerContent = (
-    <Card className={`p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'} ${isFullscreen ? 'bg-transparent border-none' : ''}`}>
+    <Card 
+      className={
+        theme?.customStyles 
+          ? `p-6 border-2 ${isFullscreen ? 'bg-transparent border-none' : ''}`
+          : `p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'} ${isFullscreen ? 'bg-transparent border-none' : ''}`
+      }
+      style={theme?.customStyles && !isFullscreen ? {
+        background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}15, ${theme.customStyles.secondaryColor}15)`,
+        borderColor: `${theme.customStyles.primaryColor}40`
+      } : undefined}
+    >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -194,7 +214,14 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
               <Button 
                 onClick={handleStart}
                 size="lg"
-                className="bg-secondary/80 hover:bg-secondary text-secondary-foreground shadow-elegant px-8"
+                className={
+                  theme?.customStyles 
+                    ? "px-8 text-white shadow-elegant"
+                    : "bg-secondary/80 hover:bg-secondary text-secondary-foreground shadow-elegant px-8"
+                }
+                style={theme?.customStyles ? {
+                  background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+                } : undefined}
               >
                 <Play className="h-5 w-5 mr-2" />
                 {isPaused ? 'Resume' : 'Start'}

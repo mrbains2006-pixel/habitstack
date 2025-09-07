@@ -185,7 +185,14 @@ export const PomodoroTimer = ({ task, onComplete, onStop, onStartNext, available
           <Button
             onClick={handleStart}
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant px-8"
+            className={
+              theme?.customStyles 
+                ? "px-8 text-white shadow-elegant"
+                : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-elegant px-8"
+            }
+            style={theme?.customStyles ? {
+              background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+            } : undefined}
           >
             <Play className="h-5 w-5 mr-2" />
             Start Focus

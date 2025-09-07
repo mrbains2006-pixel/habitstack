@@ -368,7 +368,17 @@ const Index = () => {
 
               {/* Active Pomodoro Timer */}
               {activeTask && (
-                <Card className={`p-6 bg-gradient-to-r ${pomodoroTheme.colors.background} ${pomodoroTheme.colors.accent}`}>
+                <Card 
+                  className={
+                    pomodoroTheme?.customStyles
+                      ? "p-6 border-2"
+                      : `p-6 bg-gradient-to-r ${pomodoroTheme.colors.background} ${pomodoroTheme.colors.accent}`
+                  }
+                  style={pomodoroTheme?.customStyles ? {
+                    background: `linear-gradient(135deg, ${pomodoroTheme.customStyles.primaryColor}15, ${pomodoroTheme.customStyles.secondaryColor}15)`,
+                    borderColor: `${pomodoroTheme.customStyles.primaryColor}40`
+                  } : undefined}
+                >
                   <PomodoroTimer 
                     task={activeTask}
                     onComplete={() => completeTask(activeTask.id)}

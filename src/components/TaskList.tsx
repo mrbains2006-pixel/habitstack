@@ -41,21 +41,29 @@ export const TaskList = ({
       activeTaskId === task.id ? 'bg-timer-bg border-timer-active/30' : 'bg-card'
     }`}>
       <div className="flex items-center justify-between">
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center space-x-3">
-            <h3 className={`font-medium ${
-              task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
-            }`}>
-              {task.title}
-            </h3>
-            {activeTaskId === task.id && (
-              <Badge variant="secondary" className="bg-timer-active text-warning-foreground">
-                Active
-              </Badge>
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center space-x-3">
+              <h3 className={`font-medium ${
+                task.completed ? 'line-through text-muted-foreground' : 'text-foreground'
+              }`}>
+                {task.title}
+              </h3>
+              {activeTaskId === task.id && (
+                <Badge variant="secondary" className="bg-timer-active text-warning-foreground">
+                  Active
+                </Badge>
+              )}
+            </div>
+            
+            {task.description && (
+              <p className={`text-sm ${
+                task.completed ? 'text-muted-foreground/70' : 'text-muted-foreground'
+              }`}>
+                {task.description}
+              </p>
             )}
-          </div>
-          
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+            
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <div className="flex items-center space-x-1">
               <Clock className="h-3 w-3" />
               <span>{task.estimatedTime}m</span>
