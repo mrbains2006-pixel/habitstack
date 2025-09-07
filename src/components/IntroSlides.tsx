@@ -48,36 +48,6 @@ const slides = [
     )
   },
   {
-    icon: Palette,
-    title: "Personalize Your Workspace 🎨",
-    description: "Upload your favorite background and choose your Pomodoro timer theme.",
-    content: (onBackgroundChange: (url: string | null) => void, onThemeChange: (theme: PomodoroTheme) => void, currentTheme: PomodoroTheme) => (
-      <div className="space-y-4">
-        <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-3">
-            <Palette className="h-8 w-8 text-white" />
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Customize your workspace with backgrounds and Pomodoro themes.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-muted/30 rounded-lg p-4">
-            <h4 className="text-sm font-medium mb-2">Background</h4>
-            <BackgroundSettings onBackgroundChange={onBackgroundChange} />
-          </div>
-          <div className="bg-muted/30 rounded-lg p-4">
-            <h4 className="text-sm font-medium mb-2">Timer Theme</h4>
-            <PomodoroThemeSelector 
-              selectedTheme={currentTheme.id}
-              onThemeChange={onThemeChange}
-            />
-          </div>
-        </div>
-      </div>
-    )
-  },
-  {
     icon: CheckCircle,
     title: "Create Your Tasks",
     description: "Start by adding tasks you want to complete. Set realistic time estimates for each task.",
@@ -206,10 +176,7 @@ export const IntroSlides = ({ isOpen, onClose, onBackgroundChange, pomodoroTheme
 
             {/* Render content based on type */}
             <div className="mt-6">
-              {typeof current.content === 'function' 
-                ? current.content(onBackgroundChange!, onPomodoroThemeChange, pomodoroTheme)
-                : current.content
-              }
+              {current.content}
             </div>
           </div>
 

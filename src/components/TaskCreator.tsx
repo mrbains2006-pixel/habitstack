@@ -43,7 +43,7 @@ export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md p-6 bg-card shadow-elegant">
+      <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto p-6 bg-card shadow-elegant">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">Create New Task</h2>
           <Button 

@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Check, Palette } from 'lucide-react'
 
 export interface PomodoroTheme {
   id: string
@@ -88,7 +90,38 @@ interface PomodoroThemeSelectorProps {
   onThemeChange: (theme: PomodoroTheme) => void
 }
 
+interface CustomColors {
+  primary: string
+  secondary: string
+}
+
 export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: PomodoroThemeSelectorProps) => {
+  const [showCustom, setShowCustom] = useState(false)
+  const [customColors, setCustomColors] = useState<CustomColors>({
+    primary: '#3b82f6',
+    secondary: '#1e40af'
+  })
+
+  const handleCustomThemeCreate = () => {
+    const customTheme: PomodoroTheme = {
+      id: 'custom',
+      name: 'Custom',
+      colors: {
+        background: `from-[${customColors.primary}]/20 to-[${customColors.secondary}]/20`,
+        text: 'text-foreground',
+        accent: `border-[${customColors.primary}]/30`,
+        gradient: `from-[${customColors.primary}] to-[${customColors.secondary}]`
+      },
+      preview: {
+        background: `bg-gradient-to-br from-[${customColors.primary}]/20 to-[${customColors.secondary}]/20`,
+        timer: 'text-foreground',
+        button: `bg-gradient-to-r from-[${customColors.primary}] to-[${customColors.secondary}]`
+      }
+    }
+    onThemeChange(customTheme)
+    setShowCustom(false)
+  }
+
   return (
     <div className="space-y-3">
       <div>
@@ -96,7 +129,8 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
         <p className="text-xs text-muted-foreground">Choose a visual theme for your Pomodoro timer</p>
       </div>
       
-      <div className="grid grid-cols-2 gap-2">
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-2">
         {themes.map((theme) => {
           const isSelected = selectedTheme === theme.id
           
@@ -133,6 +167,71 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
             </Card>
           )
         })}
+        </div>
+
+        {/* Custom Color Picker */}
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowCustom(!showCustom)}
+            className="w-full flex items-center space-x-2 text-xs"
+          >
+            <Palette className="h-3 w-3" />
+            <span>Create Custom Theme</span>
+          </Button>
+          
+          {showCustom && (
+            <Card className="p-3 space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label htmlFor="primary-color" className="text-xs">Primary Color</Label>
+                  <Input
+                    id="primary-color"
+                    type="color"
+                    value={customColors.primary}
+                    onChange={(e) => setCustomColors(prev => ({ ...prev, primary: e.target.value }))}
+                    className="h-8 w-full"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="secondary-color" className="text-xs">Secondary Color</Label>
+                  <Input
+                    id="secondary-color"
+                    type="color"
+                    value={customColors.secondary}
+                    onChange={(e) => setCustomColors(prev => ({ ...prev, secondary: e.target.value }))}
+                    className="h-8 w-full"
+                  />
+                </div>
+              </div>
+              
+              {/* Preview */}
+              <div 
+                className="p-2 rounded-lg text-center"
+                style={{
+                  background: `linear-gradient(135deg, ${customColors.primary}20, ${customColors.secondary}20)`
+                }}
+              >
+                <div className="text-sm font-mono font-bold text-foreground mb-1">25:00</div>
+                <div 
+                  className="h-2 rounded-full mx-2"
+                  style={{
+                    background: `linear-gradient(90deg, ${customColors.primary}, ${customColors.secondary})`
+                  }}
+                />
+              </div>
+              
+              <Button
+                onClick={handleCustomThemeCreate}
+                size="sm"
+                className="w-full text-xs"
+              >
+                Apply Custom Theme
+              </Button>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   )
