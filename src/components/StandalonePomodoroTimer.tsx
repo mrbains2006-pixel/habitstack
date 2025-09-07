@@ -115,7 +115,9 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
             : `p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'}`
         }
         style={theme?.customStyles ? {
-          background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}15, ${theme.customStyles.secondaryColor}15)`,
+          background: theme.customStyles.useGradient 
+            ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}15, ${theme.customStyles.secondaryColor}15)`
+            : `${theme.customStyles.primaryColor}15`,
           borderColor: `${theme.customStyles.primaryColor}40`
         } : undefined}
       >
@@ -170,7 +172,9 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
           : `p-6 bg-gradient-to-r ${theme?.colors.background || 'from-timer-bg to-background'} ${theme?.colors.accent || 'border-timer-active/30'} ${isFullscreen ? 'bg-transparent border-none' : ''}`
       }
       style={theme?.customStyles && !isFullscreen ? {
-        background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}15, ${theme.customStyles.secondaryColor}15)`,
+        background: theme.customStyles.useGradient 
+          ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}15, ${theme.customStyles.secondaryColor}15)`
+          : `${theme.customStyles.primaryColor}15`,
         borderColor: `${theme.customStyles.primaryColor}40`
       } : undefined}
     >
@@ -220,7 +224,9 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
                     : "bg-secondary/80 hover:bg-secondary text-secondary-foreground shadow-elegant px-8"
                 }
                 style={theme?.customStyles ? {
-                  background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+                  background: theme.customStyles.useGradient 
+                    ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+                    : theme.customStyles.primaryColor
                 } : undefined}
               >
                 <Play className="h-5 w-5 mr-2" />
@@ -264,7 +270,14 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
 
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex items-center justify-center pt-16">
+      <div 
+        className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center pt-16"
+        style={theme?.customStyles ? {
+          background: theme.customStyles.useGradient 
+            ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}20, ${theme.customStyles.secondaryColor}20)`
+            : `${theme.customStyles.primaryColor}20`
+        } : { background: 'rgba(0, 0, 0, 0.95)' }}
+      >
         <div className="w-full max-w-4xl mx-auto px-8 -mt-20">
           <div className="absolute top-6 right-6">
             <Button

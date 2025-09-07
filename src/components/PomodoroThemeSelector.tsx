@@ -23,6 +23,7 @@ export interface PomodoroTheme {
   customStyles?: {
     primaryColor: string
     secondaryColor: string
+    useGradient: boolean
   }
 }
 
@@ -97,13 +98,15 @@ interface PomodoroThemeSelectorProps {
 interface CustomColors {
   primary: string
   secondary: string
+  useGradient: boolean
 }
 
 export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: PomodoroThemeSelectorProps) => {
   const [showCustom, setShowCustom] = useState(false)
   const [customColors, setCustomColors] = useState<CustomColors>({
     primary: '#3b82f6',
-    secondary: '#1e40af'
+    secondary: '#1e40af',
+    useGradient: true
   })
 
   const handleCustomThemeCreate = () => {
@@ -124,7 +127,8 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
       // Add custom style properties for inline styles
       customStyles: {
         primaryColor: customColors.primary,
-        secondaryColor: customColors.secondary
+        secondaryColor: customColors.secondary,
+        useGradient: customColors.useGradient
       }
     }
     onThemeChange(customTheme)
@@ -154,7 +158,9 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
               <div 
                 className={theme.customStyles ? 'p-3 rounded-lg relative' : `p-3 rounded-lg ${theme.preview.background} relative`}
                 style={theme.customStyles ? {
-                  background: `linear-gradient(135deg, ${theme.customStyles.primaryColor}20, ${theme.customStyles.secondaryColor}20)`
+                  background: theme.customStyles.useGradient 
+                    ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}20, ${theme.customStyles.secondaryColor}20)`
+                    : `${theme.customStyles.primaryColor}20`
                 } : undefined}
               >
                 {isSelected && (
@@ -175,7 +181,9 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
                   <div 
                     className={theme.customStyles ? "h-4 rounded-full mx-2" : `h-4 rounded-full ${theme.preview.button} mx-2`}
                     style={theme.customStyles ? {
-                      background: `linear-gradient(90deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+                      background: theme.customStyles.useGradient 
+                        ? `linear-gradient(90deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+                        : theme.customStyles.primaryColor
                     } : undefined}
                   />
                   
@@ -202,26 +210,43 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
           
           {showCustom && (
             <Card className="p-3 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <Label htmlFor="primary-color" className="text-xs">Primary Color</Label>
-                  <Input
-                    id="primary-color"
-                    type="color"
-                    value={customColors.primary}
-                    onChange={(e) => setCustomColors(prev => ({ ...prev, primary: e.target.value }))}
-                    className="h-8 w-full"
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="use-gradient"
+                    checked={customColors.useGradient}
+                    onChange={(e) => setCustomColors(prev => ({ ...prev, useGradient: e.target.checked }))}
+                    className="rounded"
                   />
+                  <Label htmlFor="use-gradient" className="text-xs">Use Gradient</Label>
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor="secondary-color" className="text-xs">Secondary Color</Label>
-                  <Input
-                    id="secondary-color"
-                    type="color"
-                    value={customColors.secondary}
-                    onChange={(e) => setCustomColors(prev => ({ ...prev, secondary: e.target.value }))}
-                    className="h-8 w-full"
-                  />
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="primary-color" className="text-xs">
+                      {customColors.useGradient ? 'Primary Color' : 'Solid Color'}
+                    </Label>
+                    <Input
+                      id="primary-color"
+                      type="color"
+                      value={customColors.primary}
+                      onChange={(e) => setCustomColors(prev => ({ ...prev, primary: e.target.value }))}
+                      className="h-8 w-full"
+                    />
+                  </div>
+                  {customColors.useGradient && (
+                    <div className="space-y-1">
+                      <Label htmlFor="secondary-color" className="text-xs">Secondary Color</Label>
+                      <Input
+                        id="secondary-color"
+                        type="color"
+                        value={customColors.secondary}
+                        onChange={(e) => setCustomColors(prev => ({ ...prev, secondary: e.target.value }))}
+                        className="h-8 w-full"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -229,14 +254,18 @@ export const PomodoroThemeSelector = ({ selectedTheme, onThemeChange }: Pomodoro
               <div 
                 className="p-2 rounded-lg text-center"
                 style={{
-                  background: `linear-gradient(135deg, ${customColors.primary}20, ${customColors.secondary}20)`
+                  background: customColors.useGradient 
+                    ? `linear-gradient(135deg, ${customColors.primary}20, ${customColors.secondary}20)`
+                    : `${customColors.primary}20`
                 }}
               >
                 <div className="text-sm font-mono font-bold text-foreground mb-1">25:00</div>
                 <div 
                   className="h-2 rounded-full mx-2"
                   style={{
-                    background: `linear-gradient(90deg, ${customColors.primary}, ${customColors.secondary})`
+                    background: customColors.useGradient 
+                      ? `linear-gradient(90deg, ${customColors.primary}, ${customColors.secondary})`
+                      : customColors.primary
                   }}
                 />
               </div>
