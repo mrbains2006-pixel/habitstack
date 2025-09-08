@@ -274,8 +274,8 @@ export const StandalonePomodoroTimer = ({ onClose, onTimerStateChange, theme }: 
         className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center pt-16"
         style={theme?.customStyles ? {
           background: theme.customStyles.useGradient 
-            ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}20, ${theme.customStyles.secondaryColor}20)`
-            : `${theme.customStyles.primaryColor}20`
+            ? `linear-gradient(135deg, ${theme.customStyles.primaryColor}, ${theme.customStyles.secondaryColor})`
+            : theme.customStyles.primaryColor
         } : { background: 'rgba(0, 0, 0, 0.95)' }}
       >
         <div className="w-full max-w-4xl mx-auto px-8 -mt-20">
