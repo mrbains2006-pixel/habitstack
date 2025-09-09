@@ -329,8 +329,54 @@ const Index = () => {
     }
   };
 
+  const moveAllToToday = async () => {
+    try {
+      const allTasks = tasks.filter(task => !task.completed && !task.assignedToToday);
+      
+      if (allTasks.length === 0) {
+        toast({
+          title: "No tasks to move",
+          description: "All tasks are already in today's stack or completed.",
+        });
+        return;
+      }
+
+      // Update all tasks to be assigned to today with sequential order
+      const updates = allTasks.map((task, index) => ({
+        id: task.id,
+        assigned_to_today: true,
+        task_order: Date.now() + index
+      }));
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('tasks')
+          .update({ 
+            assigned_to_today: update.assigned_to_today,
+            task_order: update.task_order
+          })
+          .eq('id', update.id);
+
+        if (error) throw error;
+      }
+
+      await loadTasks();
+      toast({
+        title: "Success! 🚀",
+        description: `Moved ${allTasks.length} tasks to today's stack!`,
+      });
+    } catch (error) {
+      console.error('Error moving all to today:', error);
+      toast({
+        title: "Error",
+        description: "Failed to move tasks to today. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const moveTaskUp = async (taskId: string) => {
-    const todaysTasks = getTodaysTasks();
+    const todaysTasks = getTodaysTasks().filter(t => !t.completed);
     const taskIndex = todaysTasks.findIndex(t => t.id === taskId);
     
     if (taskIndex <= 0) return;
@@ -339,20 +385,35 @@ const Index = () => {
     const previousTask = todaysTasks[taskIndex - 1];
     
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ task_order: (previousTask.taskOrder || 0) - 1 })
-        .eq('id', taskId);
-
-      if (error) throw error;
+      // Swap the order values
+      await Promise.all([
+        supabase
+          .from('tasks')
+          .update({ task_order: previousTask.taskOrder })
+          .eq('id', currentTask.id),
+        supabase
+          .from('tasks')
+          .update({ task_order: currentTask.taskOrder })
+          .eq('id', previousTask.id)
+      ]);
+      
       await loadTasks();
+      toast({
+        title: "Moved up! ⬆️",
+        description: "Task moved up in the queue.",
+      });
     } catch (error) {
       console.error('Error moving task up:', error);
+      toast({
+        title: "Error",
+        description: "Failed to move task up. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const moveTaskDown = async (taskId: string) => {
-    const todaysTasks = getTodaysTasks();
+    const todaysTasks = getTodaysTasks().filter(t => !t.completed);
     const taskIndex = todaysTasks.findIndex(t => t.id === taskId);
     
     if (taskIndex >= todaysTasks.length - 1) return;
@@ -361,15 +422,30 @@ const Index = () => {
     const nextTask = todaysTasks[taskIndex + 1];
     
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ task_order: (nextTask.taskOrder || 0) + 1 })
-        .eq('id', taskId);
-
-      if (error) throw error;
+      // Swap the order values
+      await Promise.all([
+        supabase
+          .from('tasks')
+          .update({ task_order: nextTask.taskOrder })
+          .eq('id', currentTask.id),
+        supabase
+          .from('tasks')
+          .update({ task_order: currentTask.taskOrder })
+          .eq('id', nextTask.id)
+      ]);
+      
       await loadTasks();
+      toast({
+        title: "Moved down! ⬇️",
+        description: "Task moved down in the queue.",
+      });
     } catch (error) {
       console.error('Error moving task down:', error);
+      toast({
+        title: "Error",
+        description: "Failed to move task down. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -513,10 +589,22 @@ const Index = () => {
 
               {/* Task Management */}
               <Tabs defaultValue="today" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="today">Today's Stack</TabsTrigger>
-                  <TabsTrigger value="all">All Tasks</TabsTrigger>
-                </TabsList>
+                <div className="flex items-center justify-between mb-4">
+                  <TabsList className="grid grid-cols-2 w-fit">
+                    <TabsTrigger value="today">Today's Stack</TabsTrigger>
+                    <TabsTrigger value="all">All Tasks</TabsTrigger>
+                  </TabsList>
+                  
+                  <Button
+                    onClick={moveAllToToday}
+                    variant="outline"
+                    size="sm"
+                    className="ml-4 border-primary/30 text-primary hover:bg-primary/10"
+                    disabled={tasks.filter(task => !task.completed && !task.assignedToToday).length === 0}
+                  >
+                    📋 Move All to Today
+                  </Button>
+                </div>
                 
                 <TabsContent value="today" className="mt-4">
                   <TaskList 

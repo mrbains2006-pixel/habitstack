@@ -96,13 +96,14 @@ export const TaskList = ({
         </div>
 
         <div className="flex items-center space-x-2 ml-4">
-          {showTodayActions && onMoveUp && onMoveDown && (
+          {showTodayActions && onMoveUp && onMoveDown && !task.completed && (
             <>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => onMoveUp(task.id)}
-                className="hover:bg-muted"
+                className="hover:bg-primary/10 hover:text-primary"
+                title="Move task up in queue"
               >
                 <ChevronUp className="h-4 w-4" />
               </Button>
@@ -110,7 +111,8 @@ export const TaskList = ({
                 size="sm"
                 variant="ghost"
                 onClick={() => onMoveDown(task.id)}
-                className="hover:bg-muted"
+                className="hover:bg-primary/10 hover:text-primary"
+                title="Move task down in queue"
               >
                 <ChevronDown className="h-4 w-4" />
               </Button>
