@@ -115,6 +115,7 @@ export type Database = {
       tasks: {
         Row: {
           actual_time: number | null
+          assigned_to_today: boolean | null
           completed: boolean
           completed_at: string | null
           created_at: string
@@ -122,12 +123,14 @@ export type Database = {
           estimated_time: number
           id: string
           priority: string | null
+          task_order: number | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           actual_time?: number | null
+          assigned_to_today?: boolean | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
@@ -135,12 +138,14 @@ export type Database = {
           estimated_time?: number
           id?: string
           priority?: string | null
+          task_order?: number | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           actual_time?: number | null
+          assigned_to_today?: boolean | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
@@ -148,6 +153,7 @@ export type Database = {
           estimated_time?: number
           id?: string
           priority?: string | null
+          task_order?: number | null
           title?: string
           updated_at?: string
           user_id?: string

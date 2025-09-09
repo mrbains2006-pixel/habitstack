@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Clock, Tag, AlertCircle } from 'lucide-react';
+import { X, Clock, Tag, AlertCircle, Calendar } from 'lucide-react';
 import { Task } from '@/pages/Index';
 
 interface TaskCreatorProps {
@@ -19,6 +19,7 @@ export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
   const [estimatedTime, setEstimatedTime] = useState(25);
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [category, setCategory] = useState('');
+  const [assignToToday, setAssignToToday] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +30,15 @@ export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
         estimatedTime,
         priority,
         category: category || undefined,
+        assignedToToday: assignToToday,
+        taskOrder: assignToToday ? Date.now() : 0,
       });
       setTitle('');
       setDescription('');
       setEstimatedTime(25);
       setPriority('medium');
       setCategory('');
+      setAssignToToday(false);
     }
   };
 
@@ -143,6 +147,25 @@ export const TaskCreator = ({ onAddTask, onCancel }: TaskCreatorProps) => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4" />
+              <span>Assign to Today's Stack</span>
+            </Label>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="assignToToday"
+                checked={assignToToday}
+                onChange={(e) => setAssignToToday(e.target.checked)}
+                className="rounded border-border"
+              />
+              <Label htmlFor="assignToToday" className="text-sm">
+                Add this task to today's focus list
+              </Label>
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">

@@ -1,78 +1,76 @@
 import { useState, useEffect } from 'react';
-import { TaskCreator } from '@/components/TaskCreator';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TaskList } from '@/components/TaskList';
+import { TaskCreator } from '@/components/TaskCreator';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
 import { StandalonePomodoroTimer } from '@/components/StandalonePomodoroTimer';
 import { Analytics } from '@/components/Analytics';
 import { DailyReflection } from '@/components/DailyReflection';
-import { IntroSlides } from '@/components/IntroSlides';
-import { Settings } from '@/components/Settings';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Settings } from '@/components/Settings';
 import { UserMenu } from '@/components/UserMenu';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, BarChart3, MessageSquare, Plus, HelpCircle, Timer } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import type { PomodoroTheme } from '@/components/PomodoroThemeSelector';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { IntroSlides } from '@/components/IntroSlides';
+import { Plus, Brain, Timer, BarChart3, MessageSquare, HelpCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 export interface Task {
   id: string;
   title: string;
   description?: string;
-  estimatedTime: number; // in minutes
+  estimatedTime: number;
   actualTime?: number;
   completed: boolean;
   completedAt?: Date;
-  priority: 'low' | 'medium' | 'high';
-  createdAt: Date;
+  priority?: 'low' | 'medium' | 'high';
   category?: string;
+  createdAt: Date;
+  assignedToToday?: boolean;
+  taskOrder?: number;
 }
 
 const Index = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [showTaskCreator, setShowTaskCreator] = useState(false);
-  const [showIntro, setShowIntro] = useState(false);
   const [showStandaloneTimer, setShowStandaloneTimer] = useState(false);
   const [isTaskTimerRunning, setIsTaskTimerRunning] = useState(false);
   const [isStandaloneTimerRunning, setIsStandaloneTimerRunning] = useState(false);
-  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(
-    localStorage.getItem('habitstack-background')
-  );
-  const [pomodoroTheme, setPomodoroTheme] = useState<PomodoroTheme>(() => {
-    const saved = localStorage.getItem('habitstack-pomodoro-theme');
-    return saved ? JSON.parse(saved) : {
-      id: 'default',
-      name: 'Ocean',
-      colors: {
-        background: 'from-blue-500/20 to-cyan-500/20',
-        text: 'text-blue-900 dark:text-blue-100',
-        accent: 'border-blue-500/30',
-        gradient: 'from-blue-500 to-cyan-500'
-      },
-      preview: {
-        background: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
-        timer: 'text-blue-900',
-        button: 'bg-blue-500'
-      }
-    };
-  });
-
-  // Load tasks from Supabase
-  useEffect(() => {
-    if (user) {
-      loadTasks();
+  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
+  const [pomodoroTheme, setPomodoroTheme] = useState<any>({
+    name: 'Forest',
+    colors: {
+      background: 'from-green-50 to-emerald-50',
+      accent: 'border-green-200',
+      primary: 'text-green-700',
+      secondary: 'text-emerald-600'
     }
-  }, [user]);
+  });
+  const [showIntro, setShowIntro] = useState(false);
 
-  // Check if user has seen intro on mount
   useEffect(() => {
+    loadTasks();
+    
+    // Load background from localStorage
+    const savedBackground = localStorage.getItem('habitstack-background');
+    if (savedBackground) {
+      setBackgroundUrl(savedBackground);
+    }
+
+    // Load pomodoro theme from localStorage
+    const savedTheme = localStorage.getItem('habitstack-pomodoro-theme');
+    if (savedTheme) {
+      try {
+        setPomodoroTheme(JSON.parse(savedTheme));
+      } catch (error) {
+        console.error('Error parsing saved theme:', error);
+      }
+    }
+
+    // Show intro for new users
     const hasSeenIntro = localStorage.getItem('habitstack-intro-seen');
     if (!hasSeenIntro) {
       setShowIntro(true);
@@ -105,7 +103,9 @@ const Index = () => {
         completed: task.completed,
         completedAt: task.completed_at ? new Date(task.completed_at) : undefined,
         priority: task.priority as 'low' | 'medium' | 'high',
-        createdAt: new Date(task.created_at)
+        createdAt: new Date(task.created_at),
+        assignedToToday: task.assigned_to_today || false,
+        taskOrder: task.task_order || 0
       }));
 
       setTasks(formattedTasks);
@@ -118,13 +118,15 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from('tasks')
-        .insert([{
+        .insert({
           title: taskData.title,
           description: taskData.description,
           estimated_time: taskData.estimatedTime,
           priority: taskData.priority,
-          user_id: user?.id
-        }])
+          category: taskData.category,
+          assigned_to_today: taskData.assignedToToday || false,
+          task_order: taskData.taskOrder || Date.now()
+        })
         .select()
         .single();
 
@@ -132,30 +134,18 @@ const Index = () => {
         console.error('Error adding task:', error);
         toast({
           title: "Error",
-          description: "Failed to add task. Please try again.",
+          description: "Failed to create task. Please try again.",
           variant: "destructive",
         });
         return;
       }
 
-      const formattedTask: Task = {
-        id: data.id,
-        title: data.title,
-        description: data.description,
-        estimatedTime: data.estimated_time,
-        actualTime: data.actual_time,
-        completed: data.completed,
-        completedAt: data.completed_at ? new Date(data.completed_at) : undefined,
-        priority: data.priority as 'low' | 'medium' | 'high',
-        createdAt: new Date(data.created_at)
-      };
-
-      setTasks(prev => [formattedTask, ...prev]);
+      await loadTasks();
       setShowTaskCreator(false);
       
       toast({
-        title: "Task Added! ✨",
-        description: `"${taskData.title}" has been added to your list.`,
+        title: "Success",
+        description: "Task created successfully!",
       });
     } catch (error) {
       console.error('Error adding task:', error);
@@ -166,8 +156,8 @@ const Index = () => {
     try {
       const { error } = await supabase
         .from('tasks')
-        .update({
-          completed: true,
+        .update({ 
+          completed: true, 
           completed_at: new Date().toISOString()
         })
         .eq('id', taskId);
@@ -182,15 +172,16 @@ const Index = () => {
         return;
       }
 
-      setTasks(prev => prev.map(task => 
-        task.id === taskId 
-          ? { ...task, completed: true, completedAt: new Date() }
-          : task
-      ));
-      
-      if (activeTask?.id === taskId) {
+      if (activeTask && activeTask.id === taskId) {
         setActiveTask(null);
+        setIsTaskTimerRunning(false);
       }
+
+      await loadTasks();
+      toast({
+        title: "Great job! 🎉",
+        description: "Task completed successfully!",
+      });
     } catch (error) {
       console.error('Error completing task:', error);
     }
@@ -213,14 +204,15 @@ const Index = () => {
         return;
       }
 
-      setTasks(prev => prev.filter(task => task.id !== taskId));
-      if (activeTask?.id === taskId) {
+      if (activeTask && activeTask.id === taskId) {
         setActiveTask(null);
+        setIsTaskTimerRunning(false);
       }
 
+      await loadTasks();
       toast({
-        title: "Task Deleted",
-        description: "Task has been removed from your list.",
+        title: "Success",
+        description: "Task deleted successfully!",
       });
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -228,8 +220,7 @@ const Index = () => {
   };
 
   const startTask = (task: Task) => {
-    // Stop standalone timer if running
-    if (isStandaloneTimerRunning) {
+    if (showStandaloneTimer) {
       setShowStandaloneTimer(false);
       setIsStandaloneTimerRunning(false);
     }
@@ -255,7 +246,9 @@ const Index = () => {
   const getTodaysTasks = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return tasks.filter(task => task.createdAt >= today);
+    return tasks
+      .filter(task => task.createdAt >= today || task.assignedToToday)
+      .sort((a, b) => (a.taskOrder || 0) - (b.taskOrder || 0));
   };
 
   const getCompletedTasksToday = () => {
@@ -266,6 +259,107 @@ const Index = () => {
       task.completedAt && 
       task.completedAt >= today
     );
+  };
+
+  const assignTaskToToday = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ 
+          assigned_to_today: true,
+          task_order: Date.now()
+        })
+        .eq('id', taskId);
+
+      if (error) {
+        console.error('Error assigning task to today:', error);
+        toast({
+          title: "Error",
+          description: "Failed to assign task to today. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await loadTasks();
+      toast({
+        title: "Success",
+        description: "Task assigned to today's stack!",
+      });
+    } catch (error) {
+      console.error('Error assigning task to today:', error);
+    }
+  };
+
+  const removeFromToday = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ assigned_to_today: false })
+        .eq('id', taskId);
+
+      if (error) {
+        console.error('Error removing task from today:', error);
+        toast({
+          title: "Error",
+          description: "Failed to remove task from today. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await loadTasks();
+      toast({
+        title: "Success",
+        description: "Task removed from today's stack!",
+      });
+    } catch (error) {
+      console.error('Error removing task from today:', error);
+    }
+  };
+
+  const moveTaskUp = async (taskId: string) => {
+    const todaysTasks = getTodaysTasks();
+    const taskIndex = todaysTasks.findIndex(t => t.id === taskId);
+    
+    if (taskIndex <= 0) return;
+    
+    const currentTask = todaysTasks[taskIndex];
+    const previousTask = todaysTasks[taskIndex - 1];
+    
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ task_order: (previousTask.taskOrder || 0) - 1 })
+        .eq('id', taskId);
+
+      if (error) throw error;
+      await loadTasks();
+    } catch (error) {
+      console.error('Error moving task up:', error);
+    }
+  };
+
+  const moveTaskDown = async (taskId: string) => {
+    const todaysTasks = getTodaysTasks();
+    const taskIndex = todaysTasks.findIndex(t => t.id === taskId);
+    
+    if (taskIndex >= todaysTasks.length - 1) return;
+    
+    const currentTask = todaysTasks[taskIndex];
+    const nextTask = todaysTasks[taskIndex + 1];
+    
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .update({ task_order: (nextTask.taskOrder || 0) + 1 })
+        .eq('id', taskId);
+
+      if (error) throw error;
+      await loadTasks();
+    } catch (error) {
+      console.error('Error moving task down:', error);
+    }
   };
 
   return (
@@ -420,6 +514,10 @@ const Index = () => {
                     onCompleteTask={completeTask}
                     onDeleteTask={deleteTask}
                     activeTaskId={activeTask?.id}
+                    onRemoveFromToday={removeFromToday}
+                    onMoveUp={moveTaskUp}
+                    onMoveDown={moveTaskDown}
+                    showTodayActions={true}
                   />
                 </TabsContent>
                 
@@ -430,6 +528,8 @@ const Index = () => {
                     onCompleteTask={completeTask}
                     onDeleteTask={deleteTask}
                     activeTaskId={activeTask?.id}
+                    onAssignToToday={assignTaskToToday}
+                    showTodayActions={false}
                   />
                 </TabsContent>
               </Tabs>

@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, Check, Trash2, Clock, Tag } from 'lucide-react';
+import { Play, Check, Trash2, Clock, Tag, ChevronUp, ChevronDown, Calendar, X } from 'lucide-react';
 import { Task } from '@/pages/Index';
 
 interface TaskListProps {
@@ -10,6 +10,11 @@ interface TaskListProps {
   onCompleteTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
   activeTaskId?: string;
+  onAssignToToday?: (taskId: string) => void;
+  onRemoveFromToday?: (taskId: string) => void;
+  onMoveUp?: (taskId: string) => void;
+  onMoveDown?: (taskId: string) => void;
+  showTodayActions?: boolean;
 }
 
 export const TaskList = ({ 
@@ -17,7 +22,12 @@ export const TaskList = ({
   onStartTask, 
   onCompleteTask, 
   onDeleteTask, 
-  activeTaskId 
+  activeTaskId,
+  onAssignToToday,
+  onRemoveFromToday,
+  onMoveUp,
+  onMoveDown,
+  showTodayActions = false
 }: TaskListProps) => {
   const pendingTasks = tasks.filter(task => !task.completed);
   const completedTasks = tasks.filter(task => task.completed);
@@ -86,6 +96,27 @@ export const TaskList = ({
         </div>
 
         <div className="flex items-center space-x-2 ml-4">
+          {showTodayActions && onMoveUp && onMoveDown && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onMoveUp(task.id)}
+                className="hover:bg-muted"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onMoveDown(task.id)}
+                className="hover:bg-muted"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          
           {!task.completed && (
             <>
               <Button
@@ -107,6 +138,28 @@ export const TaskList = ({
                 <Check className="h-4 w-4" />
               </Button>
             </>
+          )}
+          
+          {!showTodayActions && onAssignToToday && !task.assignedToToday && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onAssignToToday(task.id)}
+              className="hover:bg-primary hover:text-primary-foreground"
+            >
+              <Calendar className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {showTodayActions && onRemoveFromToday && task.assignedToToday && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onRemoveFromToday(task.id)}
+              className="hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           )}
           
           <Button
