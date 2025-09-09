@@ -116,6 +116,17 @@ const Index = () => {
 
   const addTask = async (taskData: Omit<Task, 'id' | 'completed' | 'createdAt' | 'actualTime'>) => {
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('No authenticated user found:', userError);
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create tasks.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase
         .from('tasks')
         .insert({
@@ -123,9 +134,9 @@ const Index = () => {
           description: taskData.description,
           estimated_time: taskData.estimatedTime,
           priority: taskData.priority,
-          category: taskData.category,
           assigned_to_today: taskData.assignedToToday || false,
-          task_order: taskData.taskOrder || Date.now()
+          task_order: taskData.taskOrder || Date.now(),
+          user_id: user.id,
         })
         .select()
         .single();
