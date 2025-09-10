@@ -1,17 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play, Check, Trash2, Clock, Tag, ChevronUp, ChevronDown, Calendar, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Play, Check, Trash2, Clock, Tag, ChevronUp, ChevronDown, Edit2 } from 'lucide-react';
 import { Task } from '@/pages/Index';
+import { useState } from 'react';
 
 interface TaskListProps {
   tasks: Task[];
   onStartTask: (task: Task) => void;
   onCompleteTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
+  onEditTask: (taskId: string, updates: { title?: string; description?: string; estimatedTime?: number }) => void;
   activeTaskId?: string;
-  onAssignToToday?: (taskId: string) => void;
-  onRemoveFromToday?: (taskId: string) => void;
   onMoveUp?: (taskId: string) => void;
   onMoveDown?: (taskId: string) => void;
   showTodayActions?: boolean;
@@ -22,15 +25,41 @@ export const TaskList = ({
   onStartTask, 
   onCompleteTask, 
   onDeleteTask, 
+  onEditTask,
   activeTaskId,
-  onAssignToToday,
-  onRemoveFromToday,
   onMoveUp,
   onMoveDown,
   showTodayActions = false
 }: TaskListProps) => {
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    estimatedTime: 25
+  });
+
   const pendingTasks = tasks.filter(task => !task.completed);
   const completedTasks = tasks.filter(task => task.completed);
+
+  const handleEditClick = (task: Task) => {
+    setEditingTask(task);
+    setEditForm({
+      title: task.title,
+      description: task.description || '',
+      estimatedTime: task.estimatedTime
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingTask) {
+      onEditTask(editingTask.id, editForm);
+      setEditingTask(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTask(null);
+  };
 
   if (tasks.length === 0) {
     return (
@@ -124,6 +153,15 @@ export const TaskList = ({
               <Button
                 size="sm"
                 variant="outline"
+                onClick={() => handleEditClick(task)}
+                className="hover:bg-secondary hover:text-secondary-foreground"
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => onStartTask(task)}
                 disabled={activeTaskId === task.id}
                 className="hover:bg-primary hover:text-primary-foreground"
@@ -142,28 +180,6 @@ export const TaskList = ({
             </>
           )}
           
-          {!showTodayActions && onAssignToToday && !task.assignedToToday && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onAssignToToday(task.id)}
-              className="hover:bg-primary hover:text-primary-foreground"
-            >
-              <Calendar className="h-4 w-4" />
-            </Button>
-          )}
-          
-          {showTodayActions && onRemoveFromToday && task.assignedToToday && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onRemoveFromToday(task.id)}
-              className="hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-          
           <Button
             size="sm"
             variant="outline"
@@ -178,38 +194,85 @@ export const TaskList = ({
   );
 
   return (
-    <div className="space-y-6">
-      {/* Pending Tasks */}
-      {pendingTasks.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
-            <span>Pending Tasks</span>
-            <Badge variant="secondary">{pendingTasks.length}</Badge>
-          </h3>
-          <div className="space-y-2">
-            {pendingTasks.map((task) => (
-              <TaskItem key={task.id} task={task} />
-            ))}
+    <>
+      <div className="space-y-6">
+        {/* Pending Tasks */}
+        {pendingTasks.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
+              <span>Pending Tasks</span>
+              <Badge variant="secondary">{pendingTasks.length}</Badge>
+            </h3>
+            <div className="space-y-2">
+              {pendingTasks.map((task) => (
+                <TaskItem key={task.id} task={task} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Completed Tasks */}
-      {completedTasks.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
-            <span>Completed Today</span>
-            <Badge variant="outline" className="bg-completed-bg text-completed border-completed/30">
-              {completedTasks.length}
-            </Badge>
-          </h3>
-          <div className="space-y-2">
-            {completedTasks.map((task) => (
-              <TaskItem key={task.id} task={task} />
-            ))}
+        {/* Completed Tasks */}
+        {completedTasks.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-foreground flex items-center space-x-2">
+              <span>Completed Today</span>
+              <Badge variant="outline" className="bg-completed-bg text-completed border-completed/30">
+                {completedTasks.length}
+              </Badge>
+            </h3>
+            <div className="space-y-2">
+              {completedTasks.map((task) => (
+                <TaskItem key={task.id} task={task} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+
+      {/* Edit Task Dialog */}
+      <Dialog open={!!editingTask} onOpenChange={handleCancelEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                placeholder="Enter task title"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                placeholder="Enter task description (optional)"
+                rows={3}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Estimated Time (minutes)</label>
+              <Input
+                type="number"
+                min="1"
+                value={editForm.estimatedTime}
+                onChange={(e) => setEditForm({ ...editForm, estimatedTime: parseInt(e.target.value) || 25 })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={!editForm.title.trim()}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

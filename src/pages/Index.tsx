@@ -134,8 +134,7 @@ const Index = () => {
           description: taskData.description,
           estimated_time: taskData.estimatedTime,
           priority: taskData.priority,
-          assigned_to_today: taskData.assignedToToday || false,
-          task_order: taskData.taskOrder || Date.now(),
+          task_order: Date.now(),
           user_id: user.id,
         })
         .select()
@@ -258,7 +257,7 @@ const Index = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return tasks
-      .filter(task => task.createdAt >= today || task.assignedToToday)
+      .filter(task => task.createdAt >= today)
       .sort((a, b) => (a.taskOrder || 0) - (b.taskOrder || 0));
   };
 
@@ -272,21 +271,23 @@ const Index = () => {
     );
   };
 
-  const assignTaskToToday = async (taskId: string) => {
+
+  const editTask = async (taskId: string, updates: { title?: string; description?: string; estimatedTime?: number }) => {
     try {
       const { error } = await supabase
         .from('tasks')
-        .update({ 
-          assigned_to_today: true,
-          task_order: Date.now()
+        .update({
+          title: updates.title,
+          description: updates.description,
+          estimated_time: updates.estimatedTime,
         })
         .eq('id', taskId);
 
       if (error) {
-        console.error('Error assigning task to today:', error);
+        console.error('Error updating task:', error);
         toast({
           title: "Error",
-          description: "Failed to assign task to today. Please try again.",
+          description: "Failed to update task. Please try again.",
           variant: "destructive",
         });
         return;
@@ -295,83 +296,10 @@ const Index = () => {
       await loadTasks();
       toast({
         title: "Success",
-        description: "Task assigned to today's stack!",
+        description: "Task updated successfully!",
       });
     } catch (error) {
-      console.error('Error assigning task to today:', error);
-    }
-  };
-
-  const removeFromToday = async (taskId: string) => {
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({ assigned_to_today: false })
-        .eq('id', taskId);
-
-      if (error) {
-        console.error('Error removing task from today:', error);
-        toast({
-          title: "Error",
-          description: "Failed to remove task from today. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      await loadTasks();
-      toast({
-        title: "Success",
-        description: "Task removed from today's stack!",
-      });
-    } catch (error) {
-      console.error('Error removing task from today:', error);
-    }
-  };
-
-  const moveAllToToday = async () => {
-    try {
-      const allTasks = tasks.filter(task => !task.completed && !task.assignedToToday);
-      
-      if (allTasks.length === 0) {
-        toast({
-          title: "No tasks to move",
-          description: "All tasks are already in today's stack or completed.",
-        });
-        return;
-      }
-
-      // Update all tasks to be assigned to today with sequential order
-      const updates = allTasks.map((task, index) => ({
-        id: task.id,
-        assigned_to_today: true,
-        task_order: Date.now() + index
-      }));
-
-      for (const update of updates) {
-        const { error } = await supabase
-          .from('tasks')
-          .update({ 
-            assigned_to_today: update.assigned_to_today,
-            task_order: update.task_order
-          })
-          .eq('id', update.id);
-
-        if (error) throw error;
-      }
-
-      await loadTasks();
-      toast({
-        title: "Success! 🚀",
-        description: `Moved ${allTasks.length} tasks to today's stack!`,
-      });
-    } catch (error) {
-      console.error('Error moving all to today:', error);
-      toast({
-        title: "Error",
-        description: "Failed to move tasks to today. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error updating task:', error);
     }
   };
 
@@ -589,22 +517,10 @@ const Index = () => {
 
               {/* Task Management */}
               <Tabs defaultValue="today" className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                  <TabsList className="grid grid-cols-2 w-fit">
-                    <TabsTrigger value="today">Today's Stack</TabsTrigger>
-                    <TabsTrigger value="all">All Tasks</TabsTrigger>
-                  </TabsList>
-                  
-                  <Button
-                    onClick={moveAllToToday}
-                    variant="outline"
-                    size="sm"
-                    className="ml-4 border-primary/30 text-primary hover:bg-primary/10"
-                    disabled={tasks.filter(task => !task.completed && !task.assignedToToday).length === 0}
-                  >
-                    📋 Move All to Today
-                  </Button>
-                </div>
+                <TabsList className="grid grid-cols-2 w-fit">
+                  <TabsTrigger value="today">Today's Stack</TabsTrigger>
+                  <TabsTrigger value="all">All Tasks</TabsTrigger>
+                </TabsList>
                 
                 <TabsContent value="today" className="mt-4">
                   <TaskList 
@@ -612,8 +528,8 @@ const Index = () => {
                     onStartTask={startTask}
                     onCompleteTask={completeTask}
                     onDeleteTask={deleteTask}
+                    onEditTask={editTask}
                     activeTaskId={activeTask?.id}
-                    onRemoveFromToday={removeFromToday}
                     onMoveUp={moveTaskUp}
                     onMoveDown={moveTaskDown}
                     showTodayActions={true}
@@ -626,8 +542,8 @@ const Index = () => {
                     onStartTask={startTask}
                     onCompleteTask={completeTask}
                     onDeleteTask={deleteTask}
+                    onEditTask={editTask}
                     activeTaskId={activeTask?.id}
-                    onAssignToToday={assignTaskToToday}
                     showTodayActions={false}
                   />
                 </TabsContent>
